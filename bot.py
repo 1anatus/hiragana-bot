@@ -1,4 +1,5 @@
 # This example requires the 'members' and 'message_content' privileged intents to function.
+# TODO: implement tests, blacktea like game, images
 
 import discord
 from discord.ext import commands
