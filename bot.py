@@ -38,6 +38,9 @@ for i in katakanaJSON:
     katakanaData.append([i["kana"], i["romaji"]])
 
 @bot.command()
+async def h(ctx): #Shortform Hiragana Command
+    await hiragana(ctx)
+@bot.command()
 async def hiragana(ctx):
     randHiragana = hiraganaData[random.randint(0, len(hiraganaData))]
     ttf = ImageFont.truetype("ARIALUNI.TTF", 256)
@@ -67,7 +70,9 @@ async def hiragana(ctx):
 
     await ctx.send(file = file, embed = embed)
 
-
+@bot.command()
+async def k(ctx): #Shortform Katakana Command
+    await katakana(ctx)
 @bot.command()
 async def katakana(ctx):
     randKatakana = katakanaData[random.randint(0, len(katakanaData))]
