@@ -5,7 +5,7 @@ from discord.ext import commands
 import random
 import config
 import json
-
+from PIL import Image, ImageDraw, ImageFont
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
 
@@ -35,16 +35,32 @@ basicHiragana = []
 @bot.command()
 async def hiragana(ctx):
     randHiragana = hiraganaData[random.randint(0, len(hiraganaData))]
+    ttf = ImageFont.truetype("ARIALUNI.TTF", 256)
+    message = str(randHiragana[0])
+    width = 512
+    height = 512
+
+    img = Image.new("RGB", (width, height), color = "white")
+    imgDraw = ImageDraw.Draw(img)
+    textWidth, textHeight = imgDraw.textsize(message, font = ttf)
+    xText = (width - textWidth) / 2
+    yText = (height - textHeight) / 2
+
+    imgDraw.text((xText, yText), message, fill = "black", font = ttf)
+
+    img.save("hiragana.png")
 
     embed = discord.Embed()
     embed.title = "**Hiragana**"
-    embed.description = f"{randHiragana[0]}"
+    embed.add_field(name = "Character", value=f"**{randHiragana[0]}**", inline = True)
+    embed.add_field(name = "Romaji", value=f"||{randHiragana[1]}||", inline = True)
     embed.color = 0x61D67E
-    embed.set_footer(text=f"Hiragana requested by {ctx.author.display_name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text = f"Hiragana requested by {ctx.author.display_name}", icon_url=ctx.author.avatar.url)
 
-    await ctx.send(embed = embed)
-    await ctx.send(f"||{randHiragana[1]}||")
+    file = discord.File("hiragana.png", filename = "hiragana.png")
+    embed.set_image(url = "attachment://hiragana.png")
 
+    await ctx.send(file = file, embed = embed)
 
 bot.run(config.token)
 
