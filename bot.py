@@ -1,4 +1,5 @@
 # This example requires the 'members' and 'message_content' privileged intents to function.
+# TODO: implement tests, blacktea like game, images
 
 import discord
 from discord.ext import commands
@@ -19,6 +20,7 @@ bot = commands.Bot(command_prefix = '-', description = description, intents = in
 
 @bot.event
 async def on_ready():
+    await bot.load_extension('jishaku')
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
 
