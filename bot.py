@@ -19,6 +19,7 @@ bot = commands.Bot(command_prefix = '-', description = description, intents = in
 
 @bot.event
 async def on_ready():
+    await bot.load_extension('jishaku')
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
 
@@ -38,13 +39,12 @@ async def hiragana(ctx):
 
     embed = discord.Embed()
     embed.title = "**Hiragana**"
-    embed.description = f"{randHiragana[0]}"
     embed.color = 0x61D67E
-    embed.set_footer(text=f"Hiragana requested by {ctx.author.display_name}", icon_url=ctx.author.avatar.url)
+    embed.add_field(name="Character", value=f"{randHiragana[0]}", inline=True)
+    embed.add_field(name="Romaji", value=f"||{randHiragana[1]}||", inline=True)
+    embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed = embed)
-    await ctx.send(f"||{randHiragana[1]}||")
-
 
 bot.run(config.token)
 
