@@ -16,7 +16,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix = '-', description = description, intents = intents)
+bot = commands.Bot(owner_ids=[681208628350418977], command_prefix = '-', description = description, intents = intents)
 
 @bot.event
 async def on_ready():
