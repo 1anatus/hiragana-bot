@@ -28,6 +28,9 @@ async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print("------")
 
+kanaScripts = ["hiragana", "katakana"]
+kanaScriptsShort = ["h", "k"]
+
 def kanaToList(type: str, basic: bool = False):
     kanaData = []
     with open(f"{type}.json", encoding = "utf8") as kanaJSON:
@@ -69,14 +72,10 @@ async def darkmode(ctx):
     await ctx.reply(embed = embed, mention_author=False)
     
 
-async def kana(ctx, type: str, basic: bool = False):
-    kanaScripts = ["hiragana", "katakana"]
-    if not type in kanaScripts:
-        ctx.send("nah")
-        return
-
+async def kana(ctx, type: str, basic: bool = False, flashcard: bool = False):
     check = None
     randKana = None
+    
     if type == "hiragana":
         if basic:
             randKana = basicHiraganaData[random.randint(0, len(basicHiraganaData))]
@@ -118,7 +117,9 @@ async def kana(ctx, type: str, basic: bool = False):
     embed = discord.Embed()
     embed.title = f"**{check[0]} | {check[1]}**"
     embed.add_field(name = "Character" if len(randKana[0]) == 1 else "Digraph", value = f"**{randKana[0]}**", inline = True)
-    embed.add_field(name = "Rōmaji", value = f"||{randKana[1]}||", inline = True)
+    if flashcard:
+        embed.add_field(name = "Rōmaji", value = f"||{randKana[1]}||", inline = True)
+
     embed.color = 0x61D67E
     embed.set_footer(text = f"{check[0]} requested by {ctx.author.display_name}", icon_url = ctx.author.avatar.url)
 
@@ -132,37 +133,50 @@ async def kana(ctx, type: str, basic: bool = False):
     return randKana[1]
 
 
-@bot.command(aliases = ["h"])
-async def hiragana(ctx):
-    await kana(ctx, "hiragana")
+async def fc(ctx, type: str):
+    if not type in kanaScripts and not type in kanaScriptsShort:
+        await ctx.send("nah")
+        return
 
-@bot.command(aliases = ["bh"])
-async def basichiragana(ctx):
-    await kana(ctx, "hiragana", True)
+    if type in kanaScriptsShort:
+        type = kanaScripts[kanaScriptsShort.index(type)]
 
-@bot.command(aliases = ["k"])
-async def katakana(ctx):
-    await kana(ctx, "katakana")
+    return type
 
-@bot.command(aliases = ["bk"])
-async def basickatakana(ctx):
-    await kana(ctx, "katakana", True)
+@bot.command(aliases = ["fc"])
+async def flashcard(ctx, type: str):
+    finalType = await fc(ctx, type)
+
+    await kana(ctx, finalType, False, True)
+
+@bot.command(aliases = ["bfc"])
+async def basicflashcard(ctx, type: str):
+    finalType = await fc(ctx, type)
+
+    await kana(ctx, finalType, True, True)
 
 @bot.command(aliases = ["t"])
-async def test(ctx):
-    # await ctx.reply("How many questions? (max 10)", mention_author=False)
-    romaji = await kana(ctx, "hiragana", True)
+async def test(ctx, type: str):
+    finalType = await fc(ctx, type)
+    testLength = 5
 
-    def check(msg):
-        return msg.author == ctx.author and msg.channel == ctx.channel
+    for i in range(testLength):
+        romaji = await kana(ctx, finalType, True, True)
+        keep
 
-    try:
-        msg = await bot.wait_for("message", check=check, timeout=10)
-    except asyncio.TimeoutError:
-        return await ctx.send("You didn't reply with an correct answer in time.")
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == ctx.channel
 
-    if msg.content == romaji:
-        await ctx.send(f"**{romaji}** is correct!")
+        try:
+            msg = await bot.wait_for("message", check = check, timeout = 10)
+        except asyncio.TimeoutError:
+            await ctx.send("You didn't reply with an correct answer in time.")
+            keepGoing = False
+            pass
+            
+        if keepGoing:
+            if msg.content == romaji:
+                await ctx.send(f"**{romaji}** is correct!")
 
 
 bot.run(config.token)
