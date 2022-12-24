@@ -19,7 +19,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix = '-', description = description, intents = intents, activity = discord.Activity(type = discord.ActivityType.watching, name = "-help"))
+bot = commands.Bot(owner_ids=[681208628350418977, 468101575689109525], command_prefix = '-', description = description, intents = intents, activity = discord.Activity(type = discord.ActivityType.watching, name = "-help"))
 
 @bot.event
 async def on_ready():
