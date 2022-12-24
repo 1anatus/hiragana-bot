@@ -162,7 +162,7 @@ async def test(ctx, type: str):
 
     for i in range(testLength):
         romaji = await kana(ctx, finalType, True, True)
-        keep
+        keepGoing = True
 
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
