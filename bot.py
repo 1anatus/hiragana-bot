@@ -23,26 +23,33 @@ bot = commands.Bot(command_prefix = '-', description = description, intents = in
 
 @bot.event
 async def on_ready():
-    await bot.load_extension('jishaku')
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
+    await bot.load_extension("jishaku")
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    print("------")
 
-hiraganaData = []
-with open("hiragana.json", encoding = "utf8") as hiraganaJSON:
-    hiraganaJSON = json.loads(hiraganaJSON.read())
-for i in hiraganaJSON:
-    hiraganaData.append([i["kana"], i["romaji"]])
+def kanaToList(type: str, basic: bool = False):
+    kanaData = []
+    with open(f"{type}.json", encoding = "utf8") as kanaJSON:
+        kanaJSON = json.loads(kanaJSON.read())
 
-basicHiragana = []
+    if basic:
+        for i in kanaJSON:
+            if len(i["kana"]) == 1:
+                kanaData.append([i["kana"], i["romaji"]])
+    else:
+        for i in kanaJSON:
+            kanaData.append([i["kana"], i["romaji"]])
 
-katakanaData = []
-with open("katakana.json", encoding = "utf8") as katakanaJSON:
-    katakanaJSON = json.loads(katakanaJSON.read())
-for i in katakanaJSON:
-    katakanaData.append([i["kana"], i["romaji"]])
+    return kanaData
+
+hiraganaData = kanaToList("hiragana")
+basicHiraganaData = kanaToList("hiragana", True)
+
+katakanaData = kanaToList("katakana")
+basicKatakanaData = kanaToList("katakana", True)
+
 
 darkMode = False
-
 @bot.command()
 async def darkmode(ctx):
     global darkMode
@@ -62,18 +69,28 @@ async def darkmode(ctx):
     await ctx.send(embed = embed)
     
 
-async def kana(ctx, type: str):
-    if type != "hiragana" and type != "katakana":
+async def kana(ctx, type: str, basic: bool = False):
+    kanaScripts = ["hiragana", "katakana"]
+    if not type in kanaScripts:
+        ctx.send("nah")
         return
 
     check = None
     randKana = None
     if type == "hiragana":
-        randKana = hiraganaData[random.randint(0, len(hiraganaData))]
-        check = "Hiragana"
+        if basic:
+            randKana = basicHiraganaData[random.randint(0, len(basicHiraganaData))]
+        else:
+            randKana = hiraganaData[random.randint(0, len(hiraganaData))]
+
+        check = ["ひらがな", "Hiragana"]
     elif type == "katakana":
-        randKana = katakanaData[random.randint(0, len(katakanaData))]
-        check = "Katakana"
+        if basic:
+            randKana = basicKatakanaData[random.randint(0, len(basicKatakanaData))]
+        else:
+            randKana = katakanaData[random.randint(0, len(katakanaData))]
+
+        check = ["カタカナ", "Katakana"]
 
     ttf = ImageFont.truetype("ARIALUNI.TTF", 256)
     message = str(randKana[0])
@@ -99,11 +116,11 @@ async def kana(ctx, type: str):
     img.save(f"{fileName}.png")
 
     embed = discord.Embed()
-    embed.title = f"**{check}**"
-    embed.add_field(name = "Character", value = f"**{randKana[0]}**", inline = True)
-    embed.add_field(name = "Romaji", value = f"||{randKana[1]}||", inline = True)
+    embed.title = f"**{check[0]} | {check[1]}**"
+    embed.add_field(name = "Character" if len(randKana[0]) == 1 else "Digraph", value = f"**{randKana[0]}**", inline = True)
+    embed.add_field(name = "Rōmaji", value = f"||{randKana[1]}||", inline = True)
     embed.color = 0x61D67E
-    embed.set_footer(text = f"{check} requested by {ctx.author.display_name}", icon_url = ctx.author.avatar.url)
+    embed.set_footer(text = f"{check[0]} requested by {ctx.author.display_name}", icon_url = ctx.author.avatar.url)
 
     file = discord.File(f"{fileName}.png", filename = f"{fileName}.png")
     embed.set_image(url = f"attachment://{fileName}.png")
@@ -113,13 +130,21 @@ async def kana(ctx, type: str):
     os.remove(f"{fileName}.png")
 
 
-@bot.command(aliases=["h"])
+@bot.command(aliases = ["h"])
 async def hiragana(ctx):
     await kana(ctx, "hiragana")
 
-@bot.command(aliases=["k"])
+@bot.command(aliases = ["bh"])
+async def basichiragana(ctx):
+    await kana(ctx, "hiragana", True)
+
+@bot.command(aliases = ["k"])
 async def katakana(ctx):
     await kana(ctx, "katakana")
+
+@bot.command(aliases = ["bk"])
+async def basickatakana(ctx):
+    await kana(ctx, "katakana", True)
 
 bot.run(config.token)
 
