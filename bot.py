@@ -32,13 +32,12 @@ def kanaToList(type: str, basic: bool = False):
     with open(f"{type}.json", encoding = "utf8") as kanaJSON:
         kanaJSON = json.loads(kanaJSON.read())
 
-    if basic:
-        for i in kanaJSON:
+    for i in kanaJSON:
+        if basic:
             if len(i["kana"]) == 1:
                 kanaData.append([i["kana"], i["romaji"]])
-    else:
-        for i in kanaJSON:
-            kanaData.append([i["kana"], i["romaji"]])
+        else:
+            kanaData.append([i["kana"], i["romaji"]])    
 
     return kanaData
 
