@@ -1,5 +1,6 @@
 # TODO: implement tests, blacktea like game, images
 
+import asyncio
 import discord
 from discord.ext import commands
 import random
@@ -65,7 +66,7 @@ async def darkmode(ctx):
 
     darkMode = not darkMode
 
-    await ctx.send(embed = embed)
+    await ctx.reply(embed = embed, mention_author=False)
     
 
 async def kana(ctx, type: str, basic: bool = False):
@@ -124,9 +125,11 @@ async def kana(ctx, type: str, basic: bool = False):
     file = discord.File(f"{fileName}.png", filename = f"{fileName}.png")
     embed.set_image(url = f"attachment://{fileName}.png")
 
-    await ctx.send(file = file, embed = embed)
+    await ctx.reply(file = file, embed = embed, mention_author=False)
 
     os.remove(f"{fileName}.png")
+
+    return randKana[1]
 
 
 @bot.command(aliases = ["h"])
@@ -144,6 +147,23 @@ async def katakana(ctx):
 @bot.command(aliases = ["bk"])
 async def basickatakana(ctx):
     await kana(ctx, "katakana", True)
+
+@bot.command(aliases = ["t"])
+async def test(ctx):
+    # await ctx.reply("How many questions? (max 10)", mention_author=False)
+    romaji = await kana(ctx, "hiragana", True)
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel
+
+    try:
+        msg = await bot.wait_for("message", check=check, timeout=10)
+    except asyncio.TimeoutError:
+        return await ctx.send("You didn't reply with an correct answer in time.")
+
+    if msg.content == romaji:
+        await ctx.send(f"**{romaji}** is correct!")
+
 
 bot.run(config.token)
 
