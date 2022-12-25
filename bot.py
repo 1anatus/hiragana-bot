@@ -156,28 +156,30 @@ async def basicflashcard(ctx, type: str):
     await kana(ctx, finalType, True, True)
 
 @bot.command(aliases = ["t"])
-async def test(ctx, type: str):
+async def test(ctx, type: str, testLength: int = 5):
     finalType = await fc(ctx, type)
-    testLength = 5
+    testLength = 2
+    correct = 0
 
     for i in range(testLength):
-        romaji = await kana(ctx, finalType, True, True)
+        romaji = await kana(ctx, finalType, True, True) # change 4th val to False in production
         keepGoing = True
 
         def check(msg):
-            return msg.author == ctx.author and msg.channel == ctx.channel
+            return msg.channel == ctx.channel and msg.content == romaji
 
         try:
-            msg = await bot.wait_for("message", check = check, timeout = 10)
+            msg = await bot.wait_for("message", check = check, timeout = 15)
         except asyncio.TimeoutError:
             await ctx.send("You didn't reply with an correct answer in time.")
             keepGoing = False
-            pass
             
         if keepGoing:
             if msg.content == romaji:
                 await ctx.send(f"**{romaji}** is correct!")
+                correct += 1
 
+    await ctx.send(f"{correct}/{testLength} correct.")
 
 bot.run(config.token)
 
